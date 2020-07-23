@@ -1,0 +1,45 @@
+openapi: 3.0.1
+info:
+  description: |
+    Automatic translation Diary
+  version: "1.0.0"
+  title: at-Diary
+
+paths:
+  /diaries:
+    post:
+      summary: 日記を登録する
+      requestBody:
+        description: リンク
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note:
+                  type: string
+                  example: 本日は晴天なり
+      responses:
+        '201':
+          description: Creaed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Diary'
+components:
+  schemas:
+    Diary:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 8f9ef105-2d09-4925-9a76-4754a378ebab
+        lang:
+          type: string
+          enum: [Ja, En]
+        note:
+          type: string
+          example: 本日は晴天なり
+        postedAt:
+          type: string
+          example: 2020-07-19T17:11:40.103625
