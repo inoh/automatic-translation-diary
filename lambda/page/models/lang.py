@@ -1,6 +1,6 @@
-from enum import Enum
+from enum import (Enum, auto)
 
 
 class Lang(Enum):
-    Ja = 1
-    En = 2
+    Ja = auto()
+    En = auto()
