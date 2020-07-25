@@ -1,3 +1,4 @@
+import os
 import boto3
 from page.models import (Page, PageRepository)
 
@@ -5,7 +6,7 @@ from page.models import (Page, PageRepository)
 class DynamoDBPageRepository(PageRepository):
     def save(self, page: Page):
         dynamodb = boto3.resource('dynamodb')
-        table = dynamodb.Table('Pages')
+        table = dynamodb.Table(os.environ.get('DYNAMODB_NAME_PAGES'))
         response = table.put_item(
             Item={
                 'id': f'{page.id.diary_id.id}:{page.id.lang.name}',

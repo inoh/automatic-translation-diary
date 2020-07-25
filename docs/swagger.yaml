@@ -7,8 +7,19 @@ info:
 
 paths:
   /diaries:
+    get:
+      summary: 日記の一覧を取得する
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Diary'
     post:
-      summary: 日記を登録する
+      summary: 日記を日本語で書く
       requestBody:
         description: リンク
         content:
@@ -25,10 +36,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Diary'
+                $ref: '#/components/schemas/Page'
 components:
   schemas:
     Diary:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 91fec7d5-5317-4339-9ef3-af3b12315d4d
+    Page:
       type: object
       properties:
         id:
