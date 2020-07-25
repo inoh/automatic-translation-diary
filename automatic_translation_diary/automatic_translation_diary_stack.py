@@ -50,6 +50,6 @@ class AutomaticTranslationDiaryStack(core.Stack):
                 integration=integration)
 
 
-        add_routes('POST /diaries', 'diary_usecase.save')
-        add_routes('GET /diaries', 'diary_usecase.diaries')
-        add_routes('GET /diaries/{diaryId}/{lang}', 'page_usecase.page')
+        add_routes('POST /diaries', 'diary_handler.save')
+        add_routes('GET /diaries', 'diary_handler.diaries')
+        add_routes('GET /diaries/{diaryId}/{lang}', 'page_handler.page')

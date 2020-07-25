@@ -1,17 +1,17 @@
 import json
-from diary.models import DiaryId
-from page.models import (PageRepository, PageId, Lang)
+from page.page_usecase import PageUsecase
 from page.adapter.repository.dynamodb_page_repository import DynamoDBPageRepository
 
 
-page_repository: PageRepository = DynamoDBPageRepository()
+usecase = PageUsecase(
+    DynamoDBPageRepository()
+)
 
 
 def page(event, context):
     params = event['pathParameters']
 
-    diary_id = DiaryId(params['diaryId'])
-    page = page_repository.page(PageId(diary_id, Lang.Ja))
+    page = usecase.page(params['diaryId'], params['lang'])
 
     response = {
         "id": page.id.diary_id.id,
