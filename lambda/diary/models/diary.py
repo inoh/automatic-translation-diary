@@ -13,5 +13,6 @@ class Diary:
         diary.id = DiaryId(str(uuid.uuid4()))
         return diary
 
+
     def write(self, note: str):
-        return Page(self.id, note)
+        return Page.create(self.id, note)
