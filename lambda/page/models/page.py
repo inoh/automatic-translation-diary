@@ -11,7 +11,10 @@ class Page:
     note: str
     posted_at: datetime
 
-    def __init__(self, diary_id: DiaryId, note: str):
-        self.id = PageId(diary_id, Lang.Ja)
-        self.note = note
-        self.posted_at = datetime.now()
+    @classmethod
+    def create(cls, diary_id: DiaryId, note: str):
+        page = cls()
+        page.id = PageId(diary_id, Lang.Ja)
+        page.note = note
+        page.posted_at = datetime.now()
+        return page

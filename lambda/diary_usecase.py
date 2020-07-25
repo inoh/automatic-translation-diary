@@ -8,6 +8,7 @@ from page.adapter.repository.dynamodb_page_repository import DynamoDBPageReposit
 diary_repository: DiaryRepository = DynamoDBDiaryRepository()
 page_repository: PageRepository = DynamoDBPageRepository()
 
+
 def save(event, context):
     body = json.loads(event['body'])
 
@@ -17,7 +18,7 @@ def save(event, context):
     page_repository.save(page)
 
     response = {
-        "id": diary.id.id,
+        "id": page.id.diary_id.id,
         "lang": page.id.lang.name,
         "note": page.note,
         "postedAt": page.posted_at.isoformat()
@@ -27,6 +28,7 @@ def save(event, context):
         'statusCode': 201,
         'body': json.dumps(response)
     }
+
 
 def diaries(event, context):
     diaries = diary_repository.diaries()
