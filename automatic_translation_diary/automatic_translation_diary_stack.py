@@ -1,9 +1,19 @@
-from aws_cdk import (core, aws_lambda, aws_apigatewayv2)
+from aws_cdk import (core,
+                     aws_lambda,
+                     aws_apigatewayv2,
+                     aws_dynamodb)
+
 
 class AutomaticTranslationDiaryStack(core.Stack):
 
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
+
+        pages_dynamodb_table = aws_dynamodb.Table(self, 'Pages',
+            partition_key=aws_dynamodb.Attribute(
+                name='id',
+                type=aws_dynamodb.AttributeType.STRING)
+        )
 
         api = aws_apigatewayv2.HttpApi(
             self, id, api_name='AutomaticTranslationDiary',
@@ -18,21 +28,27 @@ class AutomaticTranslationDiaryStack(core.Stack):
             ),
         )
 
-        handler = self.create_lambda_function(
-            'SaveDiary',
-            'diary_usecase.save')
+        def add_routes(endpoint, handler):
+            method, path = endpoint.split(' ')
 
-        integration = aws_apigatewayv2.LambdaProxyIntegration(handler=handler)
+            function = aws_lambda.Function(
+                self, handler.replace('.', '-'),
+                runtime=aws_lambda.Runtime.PYTHON_3_8,
+                code=aws_lambda.Code.asset('lambda'),
+                handler=handler)
 
-        api.add_routes(
-            path='/diaries',
-            methods=[aws_apigatewayv2.HttpMethod.POST],
-            integration=integration)
+            pages_dynamodb_table.grant_read_write_data(function)
+            function.add_environment(
+                'DYNAMODB_NAME_PAGES',
+                pages_dynamodb_table.table_name)
+
+            integration = aws_apigatewayv2.LambdaProxyIntegration(handler=function)
+
+            api.add_routes(
+                path=path,
+                methods=[aws_apigatewayv2.HttpMethod[method]],
+                integration=integration)
 
 
-    def create_lambda_function(self, name, handler):
-        return aws_lambda.Function(
-            self, f'AutomaticTranslationDiary{name}',
-            runtime=aws_lambda.Runtime.PYTHON_3_8,
-            code=aws_lambda.Code.asset('lambda'),
-            handler=handler)
+        add_routes('POST /diaries', 'diary_usecase.save')
+        add_routes('GET /diaries', 'diary_usecase.diaries')
