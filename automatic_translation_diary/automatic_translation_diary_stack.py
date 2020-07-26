@@ -34,7 +34,7 @@ class AutomaticTranslationDiaryStack(core.Stack):
             function = aws_lambda.Function(
                 self, handler.replace('.', '-'),
                 runtime=aws_lambda.Runtime.PYTHON_3_8,
-                code=aws_lambda.Code.asset('lambda/package'),
+                code=aws_lambda.Code.asset('lambda/src'),
                 handler=handler)
 
             pages_dynamodb_table.grant_read_write_data(function)

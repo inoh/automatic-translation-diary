@@ -5,7 +5,9 @@ from page.models import Page
 
 
 class Diary:
+
     id: DiaryId
+
 
     @classmethod
     def create(cls):
@@ -14,5 +16,5 @@ class Diary:
         return diary
 
 
-    def write(self, note: str):
+    def write(self, note: str) -> Page:
         return Page.create(self.id, note)
