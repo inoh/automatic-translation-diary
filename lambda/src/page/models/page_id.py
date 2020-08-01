@@ -6,8 +6,10 @@ from diary.models import DiaryId
 
 @dataclass(frozen=True)
 class PageId:
+
     diary_id: DiaryId
     lang: Lang
+
 
     def __eq__(self, other):
         return (self.diary_id == other.diary_id) and \

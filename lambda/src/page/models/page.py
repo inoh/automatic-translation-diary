@@ -7,9 +7,11 @@ from diary.models import DiaryId
 
 
 class Page:
+
     id: PageId
     note: str
     posted_at: datetime
+
 
     @classmethod
     def create(cls, diary_id: DiaryId, note: str):
