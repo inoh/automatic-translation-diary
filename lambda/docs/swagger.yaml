@@ -37,6 +37,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Diary'
+  /diaries/{diaryId}/{lang}:
+    get:
+      summary: 日記の詳細を取得する
+      parameters:
+        - name: diaryId
+          in: path
+          required: true
+          type: string
+        - name: lang
+          in: path
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/Diary'
+                    - $ref: '#/components/schemas/Page'
+  /diaries/{diaryId}/{lang}/speech:
+    get:
+      summary: 日記の読み上げデータを取得する
+      parameters:
+        - name: diaryId
+          in: path
+          required: true
+          type: string
+        - name: lang
+          in: path
+          required: true
+          type: string
 components:
   schemas:
     Diary:

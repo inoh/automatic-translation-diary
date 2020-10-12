@@ -1,7 +1,7 @@
 import uuid
 
 from .diary_id import DiaryId
-from page.models import Page
+from page.models import (Page, Lang)
 
 
 class Diary:
@@ -17,4 +17,4 @@ class Diary:
 
 
     def write(self, note: str) -> Page:
-        return Page.create(self.id, note)
+        return Page.create(self.id, Lang.Ja, note)

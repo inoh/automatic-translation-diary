@@ -1,7 +1,9 @@
 from aws_cdk import (core,
+                     aws_iam,
                      aws_lambda,
                      aws_apigatewayv2,
                      aws_dynamodb)
+from aws_cdk.aws_lambda_event_sources import DynamoEventSource
 
 
 class AutomaticTranslationDiaryStack(core.Stack):
@@ -28,9 +30,7 @@ class AutomaticTranslationDiaryStack(core.Stack):
             ),
         )
 
-        def add_routes(endpoint, handler):
-            method, path = endpoint.split(' ')
-
+        def create_function(handler: str):
             function = aws_lambda.Function(
                 self, handler.replace('.', '-'),
                 runtime=aws_lambda.Runtime.PYTHON_3_8,
@@ -41,15 +41,37 @@ class AutomaticTranslationDiaryStack(core.Stack):
             function.add_environment(
                 'DYNAMODB_NAME_PAGES',
                 pages_dynamodb_table.table_name)
+            function.add_to_role_policy(
+                aws_iam.PolicyStatement(
+                    resources=['*'],
+                    actions=['translate:TranslateText', 'polly:SynthesizeSpeech']))
 
-            integration = aws_apigatewayv2.LambdaProxyIntegration(handler=function)
+            return function
 
-            api.add_routes(
-                path=path,
-                methods=[aws_apigatewayv2.HttpMethod[method]],
-                integration=integration)
+        api.add_routes(
+            path='/diaries',
+            methods=[aws_apigatewayv2.HttpMethod.POST],
+            integration=aws_apigatewayv2.LambdaProxyIntegration(
+                handler=create_function('diary_handler.save')
+            ))
 
+        api.add_routes(
+            path='/diaries',
+            methods=[aws_apigatewayv2.HttpMethod.GET],
+            integration=aws_apigatewayv2.LambdaProxyIntegration(
+                handler=create_function('diary_handler.diaries')
+            ))
 
-        add_routes('POST /diaries', 'diary_handler.save')
-        add_routes('GET /diaries', 'diary_handler.diaries')
-        add_routes('GET /diaries/{diaryId}/{lang}', 'page_handler.page')
+        api.add_routes(
+            path='/diaries/{diaryId}/{lang}',
+            methods=[aws_apigatewayv2.HttpMethod.GET],
+            integration=aws_apigatewayv2.LambdaProxyIntegration(
+                handler=create_function('page_handler.page')
+            ))
+
+        api.add_routes(
+            path='/diaries/{diaryId}/{lang}/speech',
+            methods=[aws_apigatewayv2.HttpMethod.GET],
+            integration=aws_apigatewayv2.LambdaProxyIntegration(
+                handler=create_function('page_handler.speech')
+            ))

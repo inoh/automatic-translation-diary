@@ -1,19 +1,30 @@
 import json
 from diary.diary_usecase import DiaryUsecase
 from diary.adapter.repository.dynamodb_diary_repository import DynamoDBDiaryRepository
+from page.page_usecase import PageUsecase
 from page.adapter.repository.dynamodb_page_repository import DynamoDBPageRepository
+from page.adapter.service.aws_page_translator import AWSPageTranslator
+from page.adapter.service.aws_page_speech_service import AWSPageSpeechService
 
 
-usecase = DiaryUsecase(
+page_repository = DynamoDBPageRepository()
+diary_usecase = DiaryUsecase(
     DynamoDBDiaryRepository(),
-    DynamoDBPageRepository()
+    page_repository
+)
+page_usecase = PageUsecase(
+    page_repository,
+    AWSPageTranslator(),
+    AWSPageSpeechService()
 )
 
 
 def save(event, context):
     body = json.loads(event['body'])
 
-    diary = usecase.save(body['note'])
+    diary = diary_usecase.save(body['note'])
+    page_usecase.translate(
+        f'{diary.id.id}:Ja')
 
     response = {
         "id": diary.id.id
@@ -26,7 +37,7 @@ def save(event, context):
 
 
 def diaries(event, context):
-    diaries = usecase.diaries()
+    diaries = diary_usecase.diaries()
 
     response = [{
         "id": diary.id.id
