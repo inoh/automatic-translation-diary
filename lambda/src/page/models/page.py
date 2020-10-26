@@ -14,9 +14,9 @@ class Page:
 
 
     @classmethod
-    def create(cls, diary_id: DiaryId, note: str):
+    def create(cls, diary_id: DiaryId, lang: Lang, note: str):
         page = cls()
-        page.id = PageId(diary_id, Lang.Ja)
+        page.id = PageId(diary_id, lang)
         page.note = note
         page.posted_at = datetime.now()
         return page

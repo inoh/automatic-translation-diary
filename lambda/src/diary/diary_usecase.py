@@ -11,7 +11,7 @@ class DiaryUsecase():
         self.page_repository = page_repository
 
 
-    def save(self, note: str) -> Diary:
+    def save(self, note: str):
         diary = Diary.create()
         page = diary.write(note)
 
