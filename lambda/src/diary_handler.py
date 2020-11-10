@@ -1,33 +1,35 @@
 import json
+import base64
 from diary.diary_usecase import DiaryUsecase
 from diary.adapter.repository.dynamodb_diary_repository import DynamoDBDiaryRepository
-from page.page_usecase import PageUsecase
-from page.adapter.repository.dynamodb_page_repository import DynamoDBPageRepository
-from page.adapter.service.aws_page_translator import AWSPageTranslator
-from page.adapter.service.aws_page_speech_service import AWSPageSpeechService
+from diary.adapter.service.aws_lang_translator import AWSLangTranslator
+from diary.adapter.service.aws_speeking_service import AWSSpeekingService
 
 
-page_repository = DynamoDBPageRepository()
 diary_usecase = DiaryUsecase(
     DynamoDBDiaryRepository(),
-    page_repository
-)
-page_usecase = PageUsecase(
-    page_repository,
-    AWSPageTranslator(),
-    AWSPageSpeechService()
+    AWSLangTranslator(),
+    AWSSpeekingService()
 )
 
 
 def save(event, context):
+    params = event['pathParameters']
     body = json.loads(event['body'])
 
-    diary = diary_usecase.save(body['note'])
-    page_usecase.translate(
-        f'{diary.id.id}:Ja')
+    diary, trans_diary = diary_usecase.save(body['note'], params['lang'])
+
+    ja_diary, en_diary = (diary, trans_diary) if params['lang'] == 'Ja' else (trans_diary, diary)
 
     response = {
-        "id": diary.id.id
+        'id': diary.id.id,
+        'posted_at': diary.posted_at.isoformat(),
+        'Ja': {
+            'note': ja_diary.note
+        },
+        'En': {
+            'note': en_diary.note
+        }
     }
 
     return {
@@ -37,13 +39,35 @@ def save(event, context):
 
 
 def diaries(event, context):
-    diaries = diary_usecase.diaries()
+    params = event['pathParameters']
+
+    diaries = diary_usecase.diaries(params['lang'])
 
     response = [{
-        "id": diary.id.id
+        'id': diary.id.id,
+        'posted_at': diary.posted_at.isoformat(),
+        diary.id.lang.name: {
+            'note': diary.note
+        }
     } for diary in diaries]
 
     return {
         'statusCode': 200,
         'body': json.dumps(response)
+    }
+
+
+def speech(event, context):
+    params = event['pathParameters']
+
+    stream = diary_usecase.speech(params['diaryId'], params['lang'])
+
+    return {
+        'statusCode': 200,
+        'headers': {
+            'Content-Type': 'application/octet-stream',
+            'Content-Disposition': 'attachment; filename="speech.mp3"'
+        },
+        'body': base64.b64encode(stream),
+        'isBase64Encoded': True
     }

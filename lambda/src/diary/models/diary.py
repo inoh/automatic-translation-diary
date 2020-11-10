@@ -1,20 +1,41 @@
 import uuid
+from dataclasses import dataclass
+from enum import (Enum, auto)
+from datetime import datetime
 
-from .diary_id import DiaryId
-from page.models import (Page, Lang)
+
+@dataclass(frozen=True)
+class Lang(Enum):
+
+    Ja = auto()
+    En = auto()
+
+    @classmethod
+    def value_of(cls, name):
+        return [lang for lang in cls if lang.name == name][0]
+
+
+@dataclass(frozen=True)
+class DiaryId:
+
+    id: str
+    lang: Lang
+
+    def __eq__(self, other):
+        return self.id == other.id and \
+                self.lang == other.lang
 
 
 class Diary:
 
     id: DiaryId
-
+    note: str
+    posted_at: datetime
 
     @classmethod
-    def create(cls):
+    def create(cls, id: DiaryId, note: str):
         diary = cls()
-        diary.id = DiaryId(str(uuid.uuid4()))
+        diary.id = id
+        diary.note = note
+        diary.posted_at = datetime.now()
         return diary
-
-
-    def write(self, note: str) -> Page:
-        return Page.create(self.id, Lang.Ja, note)

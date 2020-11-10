@@ -3,25 +3,19 @@ info:
   description: |
     Automatic translation Diary
   version: "1.0.0"
-  title: at-Diary
+  title: Automatic Translation Diary
 
 paths:
-  /diaries:
-    get:
-      summary: 日記の一覧を取得する
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Diary'
+  /diaries/{lang}:
     post:
-      summary: 日記を日本語で書く
+      summary: 日記を書く
+      parameters:
+        - name: lang
+          in: path
+          required: true
+          type: string
       requestBody:
-        description: リンク
+        description: 日記
         content:
           application/json:
             schema:
@@ -37,18 +31,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Diary'
-  /diaries/{diaryId}/{lang}:
+  /diaries:
     get:
-      summary: 日記の詳細を取得する
-      parameters:
-        - name: diaryId
-          in: path
-          required: true
-          type: string
-        - name: lang
-          in: path
-          required: true
-          type: string
+      summary: 日記の一覧を取得する
       responses:
         '200':
           description: OK
@@ -59,8 +44,7 @@ paths:
                 items:
                   allOf:
                     - $ref: '#/components/schemas/Diary'
-                    - $ref: '#/components/schemas/Page'
-  /diaries/{diaryId}/{lang}/speech:
+  /diaries/{diaryId}/speech/{lang}:
     get:
       summary: 日記の読み上げデータを取得する
       parameters:
@@ -79,12 +63,6 @@ components:
       properties:
         id:
           type: string
-          example: 91fec7d5-5317-4339-9ef3-af3b12315d4d
-    Page:
-      type: object
-      properties:
-        id:
-          type: string
           example: 8f9ef105-2d09-4925-9a76-4754a378ebab
         lang:
           type: string
@@ -94,4 +72,4 @@ components:
           example: 本日は晴天なり
         postedAt:
           type: string
-          example: 2020-07-19T17:11:40.103625
+          example: "2020-07-19T17:11:40+09:00"
