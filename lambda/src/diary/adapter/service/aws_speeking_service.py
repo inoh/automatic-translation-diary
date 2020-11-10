@@ -1,14 +1,14 @@
 import boto3
 from contextlib import closing
-from page.models import (Page, PageTranslator, PageSpeechService, Lang)
+from diary.models import SpeekingService
 
 
 client = boto3.client('polly')
 
 
-class AWSPageSpeechService(PageSpeechService):
+class AWSSpeekingService(SpeekingService):
 
-    def speech(self, text: str):
+    def speek(self, text: str):
         response = client.synthesize_speech(
             Engine='standard',
             LanguageCode='es-US', # 'ja-JP'
