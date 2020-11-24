@@ -17,20 +17,9 @@ def save(event, context):
     params = event['pathParameters']
     body = json.loads(event['body'])
 
-    diary, trans_diary = diary_usecase.save(body['note'], params['lang'])
+    diary = diary_usecase.save(body['title'], body['note'], params['lang'])
 
-    ja_diary, en_diary = (diary, trans_diary) if params['lang'] == 'Ja' else (trans_diary, diary)
-
-    response = {
-        'id': diary.id.id,
-        'posted_at': diary.posted_at.isoformat(),
-        'Ja': {
-            'note': ja_diary.note
-        },
-        'En': {
-            'note': en_diary.note
-        }
-    }
+    response = _render_diary(diary)
 
     return {
         'statusCode': 201,
@@ -39,17 +28,9 @@ def save(event, context):
 
 
 def diaries(event, context):
-    params = event['pathParameters']
+    diaries = diary_usecase.diaries()
 
-    diaries = diary_usecase.diaries(params['lang'])
-
-    response = [{
-        'id': diary.id.id,
-        'posted_at': diary.posted_at.isoformat(),
-        diary.id.lang.name: {
-            'note': diary.note
-        }
-    } for diary in diaries]
+    response = [_render_diary(diary) for diary in diaries]
 
     return {
         'statusCode': 200,
@@ -71,3 +52,19 @@ def speech(event, context):
         'body': base64.b64encode(stream),
         'isBase64Encoded': True
     }
+
+
+def _render_diary(diary):
+    response = {
+        'id': diary.id.raw,
+        'title': diary.title,
+        'pages': {},
+    }
+
+    for page in diary.pages.values():
+        response['pages'][page.lang.name] = {
+            'note': page.note,
+            'posted_at': page.posted_at.isoformat(),
+        }
+
+    return response

@@ -1,4 +1,3 @@
-import uuid
 from .models import (
     Diary, DiaryId, Lang, DiaryRepository, LangTranslator, SpeekingService)
 
@@ -13,25 +12,24 @@ class DiaryUsecase():
         self.lang_translator = lang_translator
         self.speeking_service = speeking_service
 
-    def save(self, note: str, lang: str):
-        id = str(uuid.uuid4())
+    def save(self, title: str, note: str, lang: str):
+        diary = Diary.create(title)
+        page = diary.write_page(note, Lang.value_of(lang))
 
-        diary = Diary.create(DiaryId(id, Lang.value_of(lang)), note)
+        translated = self.lang_translator.translate(page.note, page.lang)
+
+        diary.write_page(*translated)
+
         self.diary_repository.save(diary)
 
-        trans_note, trans_lang = self.lang_translator.translate(
-            diary.note, diary.id.lang)
+        return diary
 
-        trans_diary = Diary.create(DiaryId(id, trans_lang), trans_note)
-        self.diary_repository.save(trans_diary)
+    def diaries(self):
+        return self.diary_repository.diaries()
 
-        return (diary, trans_diary)
-
-    def diaries(self, lang: str):
-        return self.diary_repository.diaries(Lang.value_of(lang))
-
-    def speech(self, diary_id: str, lang: str) -> str:
+    def speech(self, id: str, lang: str) -> str:
         diary = self.diary_repository.diary(
-            DiaryId(diary_id, Lang.value_of(lang)))
+            DiaryId(id))
 
-        return self.speeking_service.speek(diary.note)
+        return self.speeking_service.speek(
+            diary.pages[Lang.value_of(lang)].note)

@@ -57,7 +57,7 @@ class AutomaticTranslationDiaryStack(core.Stack):
             ))
 
         api.add_routes(
-            path='/diaries/{lang}',
+            path='/diaries',
             methods=[aws_apigatewayv2.HttpMethod.GET],
             integration=aws_apigatewayv2.LambdaProxyIntegration(
                 handler=create_function('diary_handler.diaries')

@@ -1,4 +1,5 @@
 import uuid
+from typing import Dict
 from dataclasses import dataclass
 from enum import (Enum, auto)
 from datetime import datetime
@@ -14,28 +15,52 @@ class Lang(Enum):
     def value_of(cls, name):
         return [lang for lang in cls if lang.name == name][0]
 
+    def __eq__(self, other):
+        return self.name == other.name
+
+
+@dataclass(frozen=True)
+class Page:
+
+    note: str
+    lang: Lang
+    posted_at: datetime
+
+    def __eq__(self, other):
+        return self.note == other.note and \
+                self.lang == other.lang and \
+                self.posted_at == other.posted_at
+
 
 @dataclass(frozen=True)
 class DiaryId:
 
-    id: str
-    lang: Lang
+    raw: str
 
     def __eq__(self, other):
-        return self.id == other.id and \
-                self.lang == other.lang
+        return self.raw == other.raw
 
 
 class Diary:
 
     id: DiaryId
-    note: str
-    posted_at: datetime
+    title: str
+    pages: Dict[Lang, Page]
 
     @classmethod
-    def create(cls, id: DiaryId, note: str):
+    def create(cls, title: str):
         diary = cls()
-        diary.id = id
-        diary.note = note
-        diary.posted_at = datetime.now()
+        diary.id = DiaryId(str(uuid.uuid4()))
+        diary.title = title
+        diary.pages = {}
         return diary
+
+
+    def write_page(self, note: str, lang: Lang) -> Page:
+        page = Page(
+            note, lang, datetime.now()
+        )
+
+        self.pages[lang] = page
+
+        return page
